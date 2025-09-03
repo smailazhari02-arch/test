@@ -1,0 +1,142 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "path": "new-order",
+        "options": {}
+      },
+      "name": "New Shopify Order",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "id": "c0e6e7d9-c3d3-4623-a55e-2b2a6f2d5e2e",
+      "position": [
+        280,
+        180
+      ],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "functionCode": "const order = $json.body;\n\n// Simulate AI logic to select the best supplier\n// In a real scenario, this would involve API calls to check\n// price, stock, and delivery speed for each supplier.\n// We'll use a placeholder logic here.\n\nlet selectedSupplier = \"aliexpress\"; // Default to AliExpress\n\nconst orderPrice = order.total_price;\n\nif (orderPrice > 50) {\n    selectedSupplier = \"cjdropshipping\"; // CJ Dropshipping for higher-value orders\n} else if (order.line_items.some(item => item.product_id === 12345)) {\n    selectedSupplier = \"spocket\"; // Spocket for a specific product\n}\n\n// Return the decision\nreturn [\n    {\n        json: {\n            ...order,\n            selectedSupplier: selectedSupplier\n        }\n    }\n];"
+      },
+      "name": "Select Best Supplier",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "id": "e7b8f9e2-d4b4-4b44-b810-7e3e4f3a2d1a",
+      "position": [
+        520,
+        180
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.selectedSupplier}}",
+              "value2": "=aliexpress"
+            }
+          ]
+        }
+      },
+      "name": "Is AliExpress?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "id": "f5a7e1f4-a6f9-4b89-a2e1-4c6e9f2d1a3e",
+      "position": [
+        780,
+        -10
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.selectedSupplier}}",
+              "value2": "=cjdropshipping"
+            }
+          ]
+        }
+      },
+      "name": "Is CJ Dropshipping?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "id": "a9d8f3c4-f2e1-4b4c-9d6a-4d2c8f1a1d1e",
+      "position": [
+        780,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.selectedSupplier}}",
+              "value2": "=spocket"
+            }
+          ]
+        }
+      },
+      "name": "Is Spocket?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "id": "b0c1d2e3-f4a5-4c6d-9b8e-7f0d5a3c2b1a",
+      "position": [
+        780,
+        370
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://api.aliexpress.com/order",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ your_aliexpress_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "name": "Send Order to AliExpress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "id": "c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f",
+      "position": [
+        1000,
+        -10
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://api.cjdropshipping.com/order",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ your_cjdropshipping_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ $json
